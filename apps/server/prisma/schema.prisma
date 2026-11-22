@@ -1,0 +1,41 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// A bookable community facility. Instants are stored as UTC timestamps and
+/// displayed in the facility's IANA time zone.
+model Facility {
+  id               String         @id @default(uuid(7)) @db.Uuid
+  slug             String         @unique
+  name             String
+  sport            String
+  timeZone         String         @map("time_zone")
+  requiresApproval Boolean        @default(false) @map("requires_approval")
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  openingHours     OpeningHours[]
+
+  @@map("facility")
+}
+
+/// Weekly opening window in the facility's local time. Minutes count from
+/// local midnight and align to 30-minute booking slots.
+model OpeningHours {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  facilityId  String   @map("facility_id") @db.Uuid
+  /// ISO weekday: 1 is Monday, 7 is Sunday.
+  weekday     Int      @db.SmallInt
+  opensAtMin  Int      @map("opens_at_min") @db.SmallInt
+  closesAtMin Int      @map("closes_at_min") @db.SmallInt
+  facility    Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@unique([facilityId, weekday])
+  @@map("opening_hours")
+}
