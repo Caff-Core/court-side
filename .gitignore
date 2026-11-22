@@ -10,6 +10,9 @@ build/
 *.tsbuildinfo
 coverage/
 
+# Generated Prisma client
+apps/server/src/generated/
+
 # Environment
 .env
 .env.*

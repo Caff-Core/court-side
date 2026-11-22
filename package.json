@@ -1,6 +1,6 @@
 {
   "name": "court-side",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "build": "turbo build",
@@ -8,7 +8,13 @@
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck",
-    "test": "turbo test"
+    "test": "turbo test",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:deploy": "turbo db:deploy",
+    "db:seed": "turbo db:seed",
+    "db:migrate": "bun --cwd apps/server run db:migrate",
+    "db:reset": "bun --cwd apps/server run db:reset"
   },
   "devDependencies": {
     "prettier": "^3.10.1",

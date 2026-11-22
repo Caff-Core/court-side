@@ -4,7 +4,8 @@
   "tasks": {
     "build": {
       "dependsOn": [
-        "^build"
+        "^build",
+        "generate"
       ],
       "inputs": [
         "$TURBO_DEFAULT$",
@@ -16,7 +17,8 @@
     },
     "lint": {
       "dependsOn": [
-        "^lint"
+        "^lint",
+        "generate"
       ]
     },
     "format": {
@@ -26,18 +28,49 @@
     },
     "typecheck": {
       "dependsOn": [
-        "^typecheck"
+        "^typecheck",
+        "generate"
       ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": [
+        "generate"
+      ]
     },
     "test": {
       "dependsOn": [
-        "^test"
+        "^test",
+        "generate"
       ],
-      "outputs": []
+      "outputs": [],
+      "cache": false
+    },
+    "generate": {
+      "inputs": [
+        "prisma/schema.prisma",
+        "prisma.config.ts"
+      ],
+      "outputs": [
+        "src/generated/**"
+      ]
+    },
+    "db:deploy": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false,
+      "dependsOn": [
+        "db:deploy"
+      ]
     }
-  }
+  },
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "PORT",
+    "APP_URL",
+    "NODE_ENV",
+    "CI"
+  ]
 }
