@@ -6,6 +6,7 @@ Build a project a GitHub reviewer can understand in five minutes. The featured w
 
 | File | Purpose |
 | --- | --- |
+| [Five-minute walkthrough](walkthrough.md) | Fictional demo personas, reproducible steps and screenshots |
 | [Portfolio scope](portfolio-scope.md) | Agreed scope, release boundaries, and GitHub deliverables |
 | [Architecture](architecture.md) | Stack, authentication, scheduling, database, and deployment decisions |
 | [Phased work breakdown](work-breakdown.md) | Phases, milestones, tasks, subtasks, and dependencies |
