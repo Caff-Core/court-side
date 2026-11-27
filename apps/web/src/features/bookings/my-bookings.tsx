@@ -31,7 +31,7 @@ import {
   myBookingsQuery,
   type Booking,
 } from "./api"
-import { BookingsGrid, type BookingColumns } from "./bookings-grid"
+import { RecordsGrid, type RecordColumns } from "@/components/records-grid"
 import { bookingColumns } from "./columns"
 
 /** Whether cancelling now is free, a no-show, or no longer possible. */
@@ -67,7 +67,7 @@ export function MyBookings() {
       toast.error("Could not cancel", { description: errorMessage(error) }),
   })
 
-  const columns = useMemo<BookingColumns<Booking>>(
+  const columns = useMemo<RecordColumns<Booking>>(
     () => [
       ...bookingColumns<Booking>(),
       {
@@ -102,7 +102,7 @@ export function MyBookings() {
   const kind = target ? cancellation(target, openedAt) : null
   return (
     <>
-      <BookingsGrid
+      <RecordsGrid
         title="Your bookings"
         query={bookings}
         columns={columns}

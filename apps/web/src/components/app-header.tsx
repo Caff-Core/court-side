@@ -63,6 +63,12 @@ export function AppHeader() {
               My bookings
             </Link>
           )}
+          {me?.status === "active" &&
+            (me.role === "staff" || me.role === "admin") && (
+              <Link to="/staff/closures" className={navLinkClass}>
+                Closures
+              </Link>
+            )}
           {me?.status === "active" && me.role === "admin" && (
             <>
               <Link to="/admin/bookings" className={navLinkClass}>

@@ -26,19 +26,19 @@ import { CircleAlertIcon } from "lucide-react"
 
 import { errorMessage } from "@/lib/api"
 
-export type BookingColumns<T extends { id: string }> = ColumnDef<
+export type RecordColumns<T extends { id: string }> = ColumnDef<
   DataGridFeatures,
   T
 >[]
 
 /**
- * A booking list as a ReUI data grid: loading skeletons from each column's
+ * A record list as a ReUI data grid: loading skeletons from each column's
  * meta, an empty state with an action, and an inline error with Retry.
  */
-export function BookingsGrid<T extends { id: string }>(props: {
+export function RecordsGrid<T extends { id: string }>(props: {
   title: string
   query: UseQueryResult<T[]>
-  columns: BookingColumns<T>
+  columns: RecordColumns<T>
   empty: React.ReactNode
 }) {
   const rows = props.query.data ?? []
