@@ -59,6 +59,8 @@ export function DaySchedule(props: {
   slug: string
   date: string | undefined
   onDateChange: (date: string | undefined) => void
+  /** Present for accounts that may book: opens a request for a slot. */
+  onRequest?: (day: DayAvailability, slotIndex: number) => void
 }) {
   const day = useQuery(availabilityQuery(props.slug, props.date))
   const data = day.data
@@ -106,10 +108,14 @@ export function DaySchedule(props: {
             {/* The stepper sits beside the day, not in the card header, so a
                 narrow screen keeps the facility name on readable lines. */}
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <DaySummary day={data} />
+              <DaySummary day={data} canBook={Boolean(props.onRequest)} />
               <DayStepper day={data} onDateChange={props.onDateChange} />
             </div>
-            <DayBody day={data} onDateChange={props.onDateChange} />
+            <DayBody
+              day={data}
+              onDateChange={props.onDateChange}
+              onRequest={props.onRequest}
+            />
           </>
         )}
       </CardContent>
@@ -164,6 +170,7 @@ function DayStepper(props: {
 function DayBody(props: {
   day: DayAvailability
   onDateChange: (date: string | undefined) => void
+  onRequest?: (day: DayAvailability, slotIndex: number) => void
 }) {
   const { day } = props
   const { timeZone } = day.facility
@@ -199,23 +206,45 @@ function DayBody(props: {
       aria-label={`Slots for ${dayLabel}`}
       className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,16.5rem),1fr))] gap-2"
     >
-      {day.slots.map((slot) => {
+      {day.slots.map((slot, index) => {
         const { label, variant } = SLOT_STATUS[slot.status]
-        return (
-          <li
-            key={slot.startsAt}
-            className={cn(
-              "flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm",
-              slot.status === "past" && "text-muted-foreground"
-            )}
-          >
+        const cell =
+          "flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm"
+        const content = (
+          <>
             <time
               dateTime={slot.startsAt}
               className="whitespace-nowrap tabular-nums"
             >
               {formatTimeRange(slot.startsAt, slot.endsAt, timeZone)}
-            </time>
+            </time>{" "}
             <DotBadge variant={variant}>{label}</DotBadge>
+          </>
+        )
+        const { onRequest } = props
+        return (
+          <li key={slot.startsAt}>
+            {onRequest && slot.status === "available" ? (
+              <button
+                type="button"
+                className={cn(
+                  cell,
+                  "text-left transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                )}
+                onClick={() => onRequest(day, index)}
+              >
+                <span className="sr-only">Request</span> {content}
+              </button>
+            ) : (
+              <div
+                className={cn(
+                  cell,
+                  slot.status === "past" && "text-muted-foreground"
+                )}
+              >
+                {content}
+              </div>
+            )}
           </li>
         )
       })}
@@ -223,7 +252,13 @@ function DayBody(props: {
   )
 }
 
-function DaySummary({ day }: { day: DayAvailability }) {
+function DaySummary({
+  day,
+  canBook,
+}: {
+  day: DayAvailability
+  canBook: boolean
+}) {
   const { timeZone } = day.facility
   const open = day.slots.filter((slot) => slot.status === "available").length
   return (
@@ -239,6 +274,7 @@ function DaySummary({ day }: { day: DayAvailability }) {
           </p>
           <p role="status" className="text-xs text-muted-foreground">
             {open} open {open === 1 ? "slot" : "slots"}
+            {canBook && open > 0 && " · choose one to book it"}
           </p>
         </>
       )}

@@ -58,10 +58,20 @@ export function AppHeader() {
           <Link to="/" className={navLinkClass} activeOptions={{ exact: true }}>
             Schedule
           </Link>
-          {me?.status === "active" && me.role === "admin" && (
-            <Link to="/admin/accounts" className={navLinkClass}>
-              Accounts
+          {me?.status === "active" && (
+            <Link to="/bookings" className={navLinkClass}>
+              My bookings
             </Link>
+          )}
+          {me?.status === "active" && me.role === "admin" && (
+            <>
+              <Link to="/admin/bookings" className={navLinkClass}>
+                Requests
+              </Link>
+              <Link to="/admin/accounts" className={navLinkClass}>
+                Accounts
+              </Link>
+            </>
           )}
         </nav>
         <div className="ml-auto flex items-center gap-2">

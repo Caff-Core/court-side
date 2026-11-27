@@ -33,6 +33,28 @@ export function formatTimeRange(start: string, end: string, timeZone: string) {
   }).formatRange(new Date(start), new Date(end))
 }
 
+/** "Sat, Nov 28, 10:00 – 11:00 AM" in the facility's time zone. */
+export function formatWhen(start: string, end: string, timeZone: string) {
+  return formatter("when", timeZone, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).formatRange(new Date(start), new Date(end))
+}
+
+/** "Sat, Nov 28, 8:00 AM" in the facility's time zone. */
+export function formatMoment(iso: string, timeZone: string) {
+  return formatter("moment", timeZone, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(iso))
+}
+
 /** "Saturday, November 28" for the instant the local day starts. */
 export function formatDay(dayStartsAt: string, timeZone: string) {
   return formatter("day", timeZone, {

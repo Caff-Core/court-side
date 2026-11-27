@@ -1,11 +1,18 @@
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
+import { RequestBookingDialog } from "@/features/bookings/request-booking-dialog"
 import { AccessNotice } from "@/features/schedule/access-notice"
-import { availabilityQuery, facilitiesQuery } from "@/features/schedule/api"
+import {
+  availabilityQuery,
+  facilitiesQuery,
+  type DayAvailability,
+} from "@/features/schedule/api"
 import { DaySchedule } from "@/features/schedule/day-schedule"
 import { FacilityPicker } from "@/features/schedule/facility-picker"
+import { meQuery } from "@/features/session/session"
 
 const searchSchema = z.object({
   facility: z.string().min(1).optional().catch(undefined),
@@ -42,6 +49,12 @@ function SchedulePage() {
   const facilities = useQuery(facilitiesQuery)
   const slug = search.facility ?? facilities.data?.[0]?.slug
   const facility = facilities.data?.find((item) => item.slug === slug)
+  const me = useQuery(meQuery)
+  const canBook = me.data?.status === "active"
+  const [request, setRequest] = useState<{
+    day: DayAvailability
+    index: number
+  } | null>(null)
 
   return (
     <div className="flex flex-col gap-6">
@@ -68,6 +81,17 @@ function SchedulePage() {
             onDateChange={(date) =>
               navigate({ search: (prev) => ({ ...prev, date }) })
             }
+            onRequest={
+              canBook ? (day, index) => setRequest({ day, index }) : undefined
+            }
+          />
+        )}
+        {request && (
+          <RequestBookingDialog
+            key={`${request.day.facility.slug}:${request.day.slots[request.index]?.startsAt}`}
+            day={request.day}
+            startIndex={request.index}
+            onClose={() => setRequest(null)}
           />
         )}
       </div>

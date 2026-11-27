@@ -12,13 +12,22 @@ import {
   resetAccounts,
   resetSchedule,
   signInOk,
-  type FixtureIdentity,
 } from "./helpers/app.js"
+import {
+  bookingHelpers,
+  local,
+  morgan,
+  NOW,
+  sat,
+  SATURDAY,
+  type Range,
+} from "./helpers/bookings.js"
 
-// Friday 2026-11-27, 14:10 in Toronto (UTC-5).
-const NOW = "2026-11-27T19:10:00.000Z"
 const clock = new FixedClock(NOW)
 let app: INestApplication
+const { activeAccount, book, facilityId, publicStatus } = bookingHelpers(
+  () => app
+)
 
 beforeAll(async () => {
   app = await createTestApp({ clock })
@@ -33,67 +42,6 @@ beforeEach(async () => {
   await resetSchedule(app)
   await resetAccounts(app)
 })
-
-type Agent = ReturnType<typeof request.agent>
-type Range = { startsAt: string; endsAt: string }
-
-/** Toronto wall-clock time on a date in late November (UTC-5) as UTC ISO. */
-function local(date: string, time: string) {
-  const [hour, minute] = time.split(":").map(Number) as [number, number]
-  const [y, m, d] = date.split("-").map(Number) as [number, number, number]
-  return new Date(Date.UTC(y, m - 1, d, hour + 5, minute)).toISOString()
-}
-const SATURDAY = "2026-11-28"
-const sat = (from: string, to: string): Range => ({
-  startsAt: local(SATURDAY, from),
-  endsAt: local(SATURDAY, to),
-})
-
-async function activeAccount(
-  identity: FixtureIdentity,
-  role: "resident" | "staff" | "admin" = "resident"
-) {
-  const agent = await signInOk(app, identity)
-  await prismaOf(app).user.update({
-    where: { email: identity.email },
-    data: { status: "active", role },
-  })
-  return agent
-}
-
-const morgan: FixtureIdentity = {
-  subject: "fixture-morgan",
-  email: "morgan.player@example.test",
-  name: "Morgan Player",
-}
-
-function book(
-  agent: Agent,
-  facility: string,
-  range: Range,
-  key: string = randomUUID()
-) {
-  return agent
-    .post("/api/bookings")
-    .set("Idempotency-Key", key)
-    .send({ facility, ...range })
-}
-
-async function facilityId(slug: string) {
-  const facility = await prismaOf(app).facility.findUniqueOrThrow({
-    where: { slug },
-  })
-  return facility.id
-}
-
-async function publicStatus(slug: string, date: string, startsAt: string) {
-  const response = await request(app.getHttpServer())
-    .get(`/api/facilities/${slug}/availability?date=${date}`)
-    .expect(200)
-  return response.body.slots.find(
-    (slot: Range & { status: string }) => slot.startsAt === startsAt
-  )?.status
-}
 
 describe("AC-005 who can book and which ranges are valid", () => {
   it("confirms an aligned request at an auto-confirm facility", async () => {

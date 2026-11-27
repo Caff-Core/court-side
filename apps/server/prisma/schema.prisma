@@ -75,26 +75,38 @@ enum BookingStatus {
   confirmed
   /// A pending request whose deadline passed before approval.
   expired
+  /// Withdrawn or cancelled in time by the requester.
+  cancelled
+  /// Cancelled by the requester less than two hours before the start.
+  no_show
+  /// Replaced by an Admin block; the time stays unavailable until the
+  /// block ends or an Admin removes it.
+  blocked
 }
 
 /// A request for one facility time range. Its schedule entry occupies the
 /// time while the booking is pending or confirmed; history stays here.
 model Booking {
-  id            String           @id @default(uuid(7)) @db.Uuid
-  facilityId    String           @map("facility_id") @db.Uuid
-  accountId     String           @map("account_id")
-  startsAt      DateTime         @map("starts_at") @db.Timestamptz(3)
-  endsAt        DateTime         @map("ends_at") @db.Timestamptz(3)
-  status        BookingStatus
+  id              String           @id @default(uuid(7)) @db.Uuid
+  facilityId      String           @map("facility_id") @db.Uuid
+  accountId       String           @map("account_id")
+  startsAt        DateTime         @map("starts_at") @db.Timestamptz(3)
+  endsAt          DateTime         @map("ends_at") @db.Timestamptz(3)
+  status          BookingStatus
   /// Approval deadline for a pending request: the earlier of 24 hours after
   /// submission and the start.
-  expiresAt     DateTime?        @map("expires_at") @db.Timestamptz(3)
-  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
-  facility      Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  account       User             @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  scheduleEntry ScheduleEntry?
-  attempts      BookingAttempt[]
+  expiresAt       DateTime?        @map("expires_at") @db.Timestamptz(3)
+  /// When the booking last changed status after it was created.
+  statusChangedAt DateTime?        @map("status_changed_at") @db.Timestamptz(3)
+  /// Admin's reason for a block. Shown to the booker, never in public.
+  statusReason    String?          @map("status_reason")
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  facility        Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  account         User             @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  scheduleEntry   ScheduleEntry?
+  attempts        BookingAttempt[]
+  notifications   Notification[]
 
   @@index([accountId, facilityId, status])
   @@map("booking")
@@ -166,6 +178,7 @@ model User {
   scheduleEntries ScheduleEntry[]
   bookings        Booking[]
   bookingAttempts BookingAttempt[]
+  notifications   Notification[]
   provision       AdminProvision?
 
   @@index([status])
@@ -242,6 +255,11 @@ enum AuditAction {
   account_approved
   account_role_changed
   account_revoked
+  booking_approved
+  booking_cancelled
+  booking_no_show
+  booking_blocked
+  booking_unblocked
 }
 
 /// Privileged account and schedule changes. Actor is null for operator
@@ -259,4 +277,26 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([createdAt])
   @@map("audit_log")
+}
+
+enum NotificationType {
+  booking_blocked
+}
+
+/// An in-app message for one account. The dedupe key keeps a retried action
+/// from notifying the same person twice.
+model Notification {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  recipientId String           @map("recipient_id")
+  type        NotificationType
+  bookingId   String?          @map("booking_id") @db.Uuid
+  message     String
+  dedupeKey   String           @unique @map("dedupe_key")
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  readAt      DateTime?        @map("read_at") @db.Timestamptz(3)
+  recipient   User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  booking     Booking?         @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([recipientId, createdAt])
+  @@map("notification")
 }
