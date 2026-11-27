@@ -39,3 +39,125 @@ model OpeningHours {
   @@unique([facilityId, weekday])
   @@map("opening_hours")
 }
+
+enum AccountStatus {
+  pending
+  active
+  revoked
+}
+
+enum Role {
+  resident
+  staff
+  admin
+}
+
+/// Better Auth user. Identity comes from Google; status and role belong to
+/// the application and are never accepted from sign-in input.
+model User {
+  id            String          @id
+  name          String
+  email         String          @unique
+  emailVerified Boolean         @default(false) @map("email_verified")
+  image         String?
+  status        AccountStatus   @default(pending)
+  role          Role?
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  sessions      Session[]
+  accounts      Account[]
+  auditEntries  AuditLog[]      @relation("AuditActor")
+  provision     AdminProvision?
+
+  @@index([status])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  token     String   @unique
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+/// Linked identity. For Google, providerId is "google" and accountId is the
+/// OpenID Connect subject.
+model Account {
+  id                    String    @id
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(3)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+/// The one-time first Admin grant. A single row may ever exist; it records
+/// the exact OpenID Connect issuer and subject and when it was used.
+model AdminProvision {
+  id         Int       @id @default(1) @db.SmallInt
+  issuer     String
+  subject    String
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(3)
+  userId     String?   @unique @map("user_id")
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("admin_provision")
+}
+
+enum AuditAction {
+  admin_provisioned
+  admin_bootstrapped
+  account_approved
+  account_role_changed
+  account_revoked
+}
+
+/// Privileged account and schedule changes. Actor is null for operator
+/// commands run outside a signed-in session.
+model AuditLog {
+  id         String      @id @default(uuid(7)) @db.Uuid
+  actorId    String?     @map("actor_id")
+  action     AuditAction
+  entityType String      @map("entity_type")
+  entityId   String      @map("entity_id")
+  details    Json        @default("{}")
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  actor      User?       @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_log")
+}

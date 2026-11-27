@@ -5,12 +5,14 @@ import {
   ServiceUnavailableException,
 } from "@nestjs/common"
 
+import { Public } from "../auth/access.decorators.js"
 import { PrismaService } from "../prisma/prisma.service.js"
 
 @Controller("health")
 export class HealthController {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
+  @Public()
   @Get()
   async check() {
     try {
