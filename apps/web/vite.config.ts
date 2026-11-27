@@ -10,6 +10,8 @@ export default defineConfig(({ mode }) => {
   // The repository root .env holds the shared same-origin settings.
   const env = loadEnv(mode, resolve(import.meta.dirname, "../.."), "")
   const apiPort = env.PORT ?? "3000"
+  // APP_URL must match this port exactly, so fail instead of drifting.
+  const webPort = Number(env.WEB_PORT ?? "5173")
 
   return {
     plugins: [
@@ -23,6 +25,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      port: webPort,
+      strictPort: true,
       proxy: {
         "/api": `http://localhost:${apiPort}`,
       },

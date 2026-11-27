@@ -3,6 +3,9 @@ import { resolve } from "node:path"
 import { Module, type DynamicModule } from "@nestjs/common"
 import { ServeStaticModule } from "@nestjs/serve-static"
 
+import { AccountsModule } from "./accounts/accounts.module.js"
+import { AuthModule } from "./auth/auth.module.js"
+import { ConfigModule } from "./config/config.module.js"
 import { HealthModule } from "./health/health.module.js"
 import { PrismaModule } from "./prisma/prisma.module.js"
 
@@ -23,6 +26,13 @@ function webAppModule(): DynamicModule[] {
 }
 
 @Module({
-  imports: [PrismaModule, HealthModule, ...webAppModule()],
+  imports: [
+    ConfigModule,
+    PrismaModule,
+    AuthModule,
+    HealthModule,
+    AccountsModule,
+    ...webAppModule(),
+  ],
 })
 export class AppModule {}
