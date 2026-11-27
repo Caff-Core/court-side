@@ -9,11 +9,24 @@ import { PrismaService } from "../../src/prisma/prisma.service.js"
 
 export const ORIGIN = "http://localhost:5173"
 
-/** Boots the real app. Pass a clock to control "now" in time-based checks. */
-export async function createTestApp(options: { clock?: Clock } = {}) {
+/**
+ * Boots the real app. Pass a clock to control "now" in time-based checks,
+ * and provider overrides to inject failures.
+ */
+export async function createTestApp(
+  options: {
+    clock?: Clock
+    overrides?: { provide: unknown; useValue: unknown }[]
+  } = {}
+) {
   let builder = Test.createTestingModule({ imports: [AppModule] })
   if (options.clock) {
     builder = builder.overrideProvider(CLOCK).useValue(options.clock)
+  }
+  for (const override of options.overrides ?? []) {
+    builder = builder
+      .overrideProvider(override.provide)
+      .useValue(override.useValue)
   }
   const moduleRef = await builder.compile()
   const app = configureApp(moduleRef.createNestApplication())

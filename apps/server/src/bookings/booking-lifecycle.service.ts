@@ -8,6 +8,7 @@ import {
 import { CLOCK, type Clock } from "../common/clock.js"
 import type { Prisma } from "../generated/prisma/client.js"
 import type { AuditAction, BookingStatus } from "../generated/prisma/enums.js"
+import { NotificationWriter } from "../notifications/notification-writer.js"
 import { PrismaService } from "../prisma/prisma.service.js"
 import {
   inFacilityTransaction,
@@ -54,7 +55,9 @@ type Applied<T> = { ok: true; value: T } | { ok: false; refusal: Refusal }
 export class BookingLifecycleService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(CLOCK) private readonly clock: Clock
+    @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(NotificationWriter)
+    private readonly notifications: NotificationWriter
   ) {}
 
   async listMine(accountId: string) {
@@ -146,14 +149,12 @@ export class BookingLifecycleService {
         where: { bookingId: id },
         data: { kind: "block", expiresAt: null, reason },
       })
-      await tx.notification.create({
-        data: {
-          recipientId: booking.accountId,
-          type: "booking_blocked",
-          bookingId: id,
-          dedupeKey: `booking_blocked:${id}`,
-          message: `An Admin blocked your booking at ${booking.facility.name} on ${describeTime(booking.startsAt, booking.facility.timeZone)}. Reason: ${reason}`,
-        },
+      await this.notifications.notify(tx, {
+        recipientId: booking.accountId,
+        type: "booking_blocked",
+        bookingId: id,
+        dedupeKey: `booking_blocked:${id}`,
+        message: `An Admin blocked your booking at ${booking.facility.name} on ${describeTime(booking.startsAt, booking.facility.timeZone)}. Reason: ${reason}`,
       })
       await audit(tx, actorId, "booking_blocked", id, { reason })
       return { ok: true, value: null }

@@ -9,6 +9,7 @@ import {
 
 import { CLOCK, type Clock } from "../common/clock.js"
 import type { Prisma } from "../generated/prisma/client.js"
+import { NotificationWriter } from "../notifications/notification-writer.js"
 import { PrismaService } from "../prisma/prisma.service.js"
 import {
   inFacilityTransaction,
@@ -44,7 +45,9 @@ type ClosureRow = Prisma.ClosureGetPayload<{ select: typeof closureView }>
 export class ClosuresService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(CLOCK) private readonly clock: Clock
+    @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(NotificationWriter)
+    private readonly notifications: NotificationWriter
   ) {}
 
   /** Open closures that have not ended yet, soonest first. */
@@ -215,14 +218,12 @@ export class ClosuresService {
         },
       })
       await tx.scheduleEntry.deleteMany({ where: { bookingId: booking.id } })
-      await tx.notification.create({
-        data: {
-          recipientId: booking.accountId,
-          type: "booking_cancelled_closure",
-          bookingId: booking.id,
-          dedupeKey: `closure:${closure.id}:booking:${booking.id}`,
-          message: `Your booking at ${facility.name} on ${describeTime(booking.startsAt, facility.timeZone)} was cancelled because the facility is closed. Reason: ${reason}`,
-        },
+      await this.notifications.notify(tx, {
+        recipientId: booking.accountId,
+        type: "booking_cancelled_closure",
+        bookingId: booking.id,
+        dedupeKey: `closure:${closure.id}:booking:${booking.id}`,
+        message: `Your booking at ${facility.name} on ${describeTime(booking.startsAt, facility.timeZone)} was cancelled because the facility is closed. Reason: ${reason}`,
       })
       await audit(tx, actorId, "booking_cancelled", "booking", booking.id, {
         closureId: closure.id,

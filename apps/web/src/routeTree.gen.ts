@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from "./routes/__root"
 import { Route as IndexRouteImport } from "./routes/index"
 import { Route as AccountRouteImport } from "./routes/account"
 import { Route as BookingsRouteImport } from "./routes/bookings"
+import { Route as NotificationsRouteImport } from "./routes/notifications"
 import { Route as SignInRouteImport } from "./routes/sign-in"
 import { Route as AdminAccountsRouteImport } from "./routes/admin/accounts"
 import { Route as AdminBookingsRouteImport } from "./routes/admin/bookings"
@@ -30,6 +31,11 @@ const AccountRoute = AccountRouteImport.update({
 const BookingsRoute = BookingsRouteImport.update({
   id: "/bookings",
   path: "/bookings",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: "/notifications",
+  path: "/notifications",
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignInRoute = SignInRouteImport.update({
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
   "/account": typeof AccountRoute
   "/bookings": typeof BookingsRoute
+  "/notifications": typeof NotificationsRoute
   "/sign-in": typeof SignInRoute
   "/admin/accounts": typeof AdminAccountsRoute
   "/admin/bookings": typeof AdminBookingsRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   "/": typeof IndexRoute
   "/account": typeof AccountRoute
   "/bookings": typeof BookingsRoute
+  "/notifications": typeof NotificationsRoute
   "/sign-in": typeof SignInRoute
   "/admin/accounts": typeof AdminAccountsRoute
   "/admin/bookings": typeof AdminBookingsRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   "/": typeof IndexRoute
   "/account": typeof AccountRoute
   "/bookings": typeof BookingsRoute
+  "/notifications": typeof NotificationsRoute
   "/sign-in": typeof SignInRoute
   "/admin/accounts": typeof AdminAccountsRoute
   "/admin/bookings": typeof AdminBookingsRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | "/"
     | "/account"
     | "/bookings"
+    | "/notifications"
     | "/sign-in"
     | "/admin/accounts"
     | "/admin/bookings"
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | "/"
     | "/account"
     | "/bookings"
+    | "/notifications"
     | "/sign-in"
     | "/admin/accounts"
     | "/admin/bookings"
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | "/"
     | "/account"
     | "/bookings"
+    | "/notifications"
     | "/sign-in"
     | "/admin/accounts"
     | "/admin/bookings"
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   BookingsRoute: typeof BookingsRoute
+  NotificationsRoute: typeof NotificationsRoute
   SignInRoute: typeof SignInRoute
   AdminAccountsRoute: typeof AdminAccountsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
@@ -142,6 +155,13 @@ declare module "@tanstack/react-router" {
       path: "/bookings"
       fullPath: "/bookings"
       preLoaderRoute: typeof BookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/notifications": {
+      id: "/notifications"
+      path: "/notifications"
+      fullPath: "/notifications"
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     "/sign-in": {
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   BookingsRoute: BookingsRoute,
+  NotificationsRoute: NotificationsRoute,
   SignInRoute: SignInRoute,
   AdminAccountsRoute: AdminAccountsRoute,
   AdminBookingsRoute: AdminBookingsRoute,

@@ -44,5 +44,6 @@ export function invalidateClosureData(queryClient: QueryClient) {
     queryClient.invalidateQueries({ queryKey: ["closures"] }),
     queryClient.invalidateQueries({ queryKey: ["availability"] }),
     queryClient.invalidateQueries({ queryKey: ["bookings"] }),
+    queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   ])
 }
