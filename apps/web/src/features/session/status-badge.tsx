@@ -1,4 +1,4 @@
-import { Badge } from "@workspace/ui/components/reui/badge"
+import { DotBadge } from "@/components/dot-badge"
 
 import type { AccountStatus } from "./types"
 
@@ -10,11 +10,5 @@ const STATUS = {
 
 export function StatusBadge({ status }: { status: AccountStatus }) {
   const { label, variant } = STATUS[status]
-  return (
-    <Badge variant={variant}>
-      {/* Dot takes the variant's text color; the label carries the meaning. */}
-      <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
-      {label}
-    </Badge>
-  )
+  return <DotBadge variant={variant}>{label}</DotBadge>
 }

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { Button } from "@workspace/ui/components/button"
+import { Button, buttonVariants } from "@workspace/ui/components/button"
 import {
   Card,
   CardContent,
@@ -94,14 +94,15 @@ function AccountPage() {
                   </AlertDescription>
                 </Alert>
               )}
-              <Button
-                variant="outline"
-                className="self-start"
-                render={<Link to="/" />}
-                nativeButton={false}
+              <Link
+                to="/"
+                className={buttonVariants({
+                  variant: "outline",
+                  className: "self-start",
+                })}
               >
                 Browse the schedule
-              </Button>
+              </Link>
             </>
           )}
         </CardContent>

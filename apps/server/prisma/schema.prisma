@@ -12,17 +12,56 @@ datasource db {
 /// A bookable community facility. Instants are stored as UTC timestamps and
 /// displayed in the facility's IANA time zone.
 model Facility {
-  id               String         @id @default(uuid(7)) @db.Uuid
-  slug             String         @unique
+  id               String          @id @default(uuid(7)) @db.Uuid
+  slug             String          @unique
   name             String
   sport            String
-  timeZone         String         @map("time_zone")
-  requiresApproval Boolean        @default(false) @map("requires_approval")
-  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  timeZone         String          @map("time_zone")
+  requiresApproval Boolean         @default(false) @map("requires_approval")
+  createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
   openingHours     OpeningHours[]
+  scheduleEntries  ScheduleEntry[]
 
   @@map("facility")
+}
+
+/// What occupies a schedule entry's time. The public schedule shows only the
+/// kind; the requester and reason stay private.
+enum ScheduleEntryKind {
+  /// A pending booking request holding its slot until it expires.
+  hold
+  /// A confirmed booking.
+  booking
+  /// A published community event.
+  event
+  /// An Admin block that replaced a booking.
+  block
+  /// A maintenance closure.
+  closure
+}
+
+/// Time a facility cannot be booked. Ranges are start-inclusive and
+/// end-exclusive, so adjacent entries may share an endpoint.
+model ScheduleEntry {
+  id         String            @id @default(uuid(7)) @db.Uuid
+  facilityId String            @map("facility_id") @db.Uuid
+  kind       ScheduleEntryKind
+  startsAt   DateTime          @map("starts_at") @db.Timestamptz(3)
+  endsAt     DateTime          @map("ends_at") @db.Timestamptz(3)
+  /// When a hold stops occupying time. Reads ignore expired holds even
+  /// before cleanup removes them.
+  expiresAt  DateTime?         @map("expires_at") @db.Timestamptz(3)
+  /// Requester or blocked user. Private.
+  accountId  String?           @map("account_id")
+  /// Internal reason for an event, block or closure. Private.
+  reason     String?
+  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  facility   Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  account    User?             @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  @@index([facilityId, startsAt])
+  @@map("schedule_entry")
 }
 
 /// Weekly opening window in the facility's local time. Minutes count from
@@ -55,19 +94,20 @@ enum Role {
 /// Better Auth user. Identity comes from Google; status and role belong to
 /// the application and are never accepted from sign-in input.
 model User {
-  id            String          @id
-  name          String
-  email         String          @unique
-  emailVerified Boolean         @default(false) @map("email_verified")
-  image         String?
-  status        AccountStatus   @default(pending)
-  role          Role?
-  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
-  sessions      Session[]
-  accounts      Account[]
-  auditEntries  AuditLog[]      @relation("AuditActor")
-  provision     AdminProvision?
+  id              String          @id
+  name            String
+  email           String          @unique
+  emailVerified   Boolean         @default(false) @map("email_verified")
+  image           String?
+  status          AccountStatus   @default(pending)
+  role            Role?
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  sessions        Session[]
+  accounts        Account[]
+  auditEntries    AuditLog[]      @relation("AuditActor")
+  scheduleEntries ScheduleEntry[]
+  provision       AdminProvision?
 
   @@index([status])
   @@map("user")

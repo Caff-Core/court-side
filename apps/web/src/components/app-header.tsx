@@ -5,7 +5,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@workspace/ui/components/avatar"
-import { Button } from "@workspace/ui/components/button"
+import { Button, buttonVariants } from "@workspace/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -103,13 +103,9 @@ export function AppHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button
-              size="sm"
-              render={<Link to="/sign-in" />}
-              nativeButton={false}
-            >
+            <Link to="/sign-in" className={buttonVariants({ size: "sm" })}>
               Sign in
-            </Button>
+            </Link>
           )}
         </div>
       </div>
