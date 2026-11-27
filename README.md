@@ -38,13 +38,13 @@ Check the API with `curl http://localhost:5173/api/health`.
 Anyone can browse the schedule at `/`. Signing in uses Google through Better Auth. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env`, then grant the first Admin once, by Google subject:
 
 ```bash
-bun --cwd apps/server run admin:provision -- --subject <google-sub>
+bun run --cwd apps/server admin:provision --subject <google-sub>
 ```
 
 Without Google credentials, `AUTH_IDENTITY_FIXTURE=true` offers fictional personas on the sign-in screen. The server refuses the fixture in production. To give those personas their roles and put one of each schedule status on tomorrow's schedule:
 
 ```bash
-bun --cwd apps/server run db:seed:demo
+bun run --cwd apps/server db:seed:demo
 ```
 
 ## Database
