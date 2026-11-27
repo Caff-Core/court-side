@@ -7,11 +7,11 @@ import {
 
 import { CLOCK, type Clock } from "../common/clock.js"
 import { PrismaService } from "../prisma/prisma.service.js"
-import { daySlots, WINDOW_DAYS } from "./availability.js"
+import { daySlots } from "./availability.js"
+import { bookingWindow } from "./slot-rules.js"
 import {
   addDays,
   isoWeekday,
-  localDateOf,
   zonedInstant,
   type LocalDate,
 } from "./zoned-time.js"
@@ -50,9 +50,8 @@ export class ScheduleService {
 
     const now = this.clock.now()
     const { timeZone } = facility
-    const today = localDateOf(now, timeZone)
-    const firstDate = today
-    const lastDate = addDays(today, WINDOW_DAYS - 1)
+    const { firstDate, lastDate } = bookingWindow(now, timeZone)
+    const today = firstDate
     const date = requested ?? today
     if (date < firstDate || date > lastDate) {
       throw new BadRequestException(
