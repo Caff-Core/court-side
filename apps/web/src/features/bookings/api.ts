@@ -101,5 +101,6 @@ export function invalidateBookingData(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: ["availability"] }),
     queryClient.invalidateQueries({ queryKey: ["bookings"] }),
+    queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   ])
 }

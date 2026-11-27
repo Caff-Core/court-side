@@ -15,9 +15,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import { LogOutIcon, UserIcon } from "lucide-react"
+import { BellIcon, LogOutIcon, UserIcon } from "lucide-react"
 import { toast } from "sonner"
+import { Badge } from "@workspace/ui/components/reui/badge"
 
+import { unreadCountQuery } from "@/features/notifications/api"
 import { meQuery, signOut } from "@/features/session/session"
 import { ROLE_LABELS } from "@/features/session/types"
 import { errorMessage } from "@/lib/api"
@@ -81,6 +83,7 @@ export function AppHeader() {
           )}
         </nav>
         <div className="ml-auto flex items-center gap-2">
+          {me && <NotificationsLink />}
           {me ? (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -126,5 +129,27 @@ export function AppHeader() {
         </div>
       </div>
     </header>
+  )
+}
+
+/** Bell link to the inbox with the unread count, refreshed in the background. */
+function NotificationsLink() {
+  const { data } = useQuery(unreadCountQuery)
+  const count = data?.count ?? 0
+  return (
+    <Link
+      to="/notifications"
+      aria-label={
+        count > 0 ? `Notifications, ${count} unread` : "Notifications"
+      }
+      className={buttonVariants({ variant: "ghost", size: "sm" })}
+    >
+      <BellIcon aria-hidden="true" />
+      {count > 0 && (
+        <Badge variant="info" size="sm" className="tabular-nums">
+          {count}
+        </Badge>
+      )}
+    </Link>
   )
 }
