@@ -3,11 +3,11 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { formatMoment, formatWhen } from "@/features/schedule/format"
 
 import type { Booking } from "./api"
-import type { BookingColumns } from "./bookings-grid"
+import type { RecordColumns } from "@/components/records-grid"
 import { BookingStatusBadge } from "./booking-status"
 
 /** Facility, time and status columns shared by every booking list. */
-export function bookingColumns<T extends Booking>(): BookingColumns<T> {
+export function bookingColumns<T extends Booking>(): RecordColumns<T> {
   return [
     {
       id: "facility",
@@ -57,6 +57,9 @@ function StatusCell({ booking }: { booking: Booking }) {
         <span className="text-xs text-muted-foreground">
           Approve by {formatMoment(booking.expiresAt, timeZone)}
         </span>
+      )}
+      {booking.status === "cancelled" && booking.reason && (
+        <span className="text-xs text-muted-foreground">{booking.reason}</span>
       )}
       {booking.status === "blocked" && booking.reason && (
         <span className="text-xs text-muted-foreground">

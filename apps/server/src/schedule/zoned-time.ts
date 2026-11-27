@@ -31,6 +31,21 @@ export function parseLocalDate(value: string): DateParts | null {
   return real ? { year, month, day } : null
 }
 
+/**
+ * Reads a wall-clock date and time such as "2026-11-28T09:30", as an HTML
+ * datetime-local input sends it, into a date and minutes from midnight.
+ */
+export function parseLocalDateTime(
+  value: string
+): { date: LocalDate; minutes: number } | null {
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})$/.exec(value)
+  if (!match || !parseLocalDate(match[1]!)) return null
+  const hour = Number(match[2])
+  const minute = Number(match[3])
+  if (hour > 23 || minute > 59) return null
+  return { date: match[1]!, minutes: hour * 60 + minute }
+}
+
 function requireDate(value: LocalDate): DateParts {
   const parts = parseLocalDate(value)
   if (!parts) throw new RangeError(`Not an ISO calendar date: ${value}`)

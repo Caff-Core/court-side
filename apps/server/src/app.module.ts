@@ -6,6 +6,7 @@ import { ServeStaticModule } from "@nestjs/serve-static"
 import { AccountsModule } from "./accounts/accounts.module.js"
 import { AuthModule } from "./auth/auth.module.js"
 import { BookingsModule } from "./bookings/bookings.module.js"
+import { ClosuresModule } from "./closures/closures.controller.js"
 import { ClockModule } from "./common/clock.js"
 import { ConfigModule } from "./config/config.module.js"
 import { HealthModule } from "./health/health.module.js"
@@ -40,6 +41,7 @@ function webAppModule(): DynamicModule[] {
     ScheduleModule,
     BookingsModule,
     NotificationsModule,
+    ClosuresModule,
     ...webAppModule(),
   ],
 })

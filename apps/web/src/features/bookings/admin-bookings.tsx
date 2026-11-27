@@ -45,7 +45,7 @@ import {
   type AdminBooking,
   type AdminBookingFilter,
 } from "./api"
-import { BookingsGrid, type BookingColumns } from "./bookings-grid"
+import { RecordsGrid, type RecordColumns } from "@/components/records-grid"
 import { bookingColumns } from "./columns"
 
 const TABS: Record<AdminBookingFilter, { label: string; empty: string }> = {
@@ -114,7 +114,7 @@ function AdminBookingList({ filter }: { filter: AdminBookingFilter }) {
     onError: failed("Could not remove the block"),
   })
 
-  const columns = useMemo<BookingColumns<AdminBooking>>(
+  const columns = useMemo<RecordColumns<AdminBooking>>(
     () => [
       {
         id: "requester",
@@ -193,7 +193,7 @@ function AdminBookingList({ filter }: { filter: AdminBookingFilter }) {
 
   return (
     <>
-      <BookingsGrid
+      <RecordsGrid
         title={`${TABS[filter].label} bookings`}
         query={bookings}
         columns={columns}

@@ -24,6 +24,7 @@ model Facility {
   scheduleEntries  ScheduleEntry[]
   bookings         Booking[]
   bookingAttempts  BookingAttempt[]
+  closures         Closure[]
 
   @@map("facility")
 }
@@ -64,6 +65,9 @@ model ScheduleEntry {
   facility   Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   account    User?             @relation(fields: [accountId], references: [id], onDelete: SetNull)
   booking    Booking?          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  /// The closure a closure entry belongs to.
+  closureId  String?           @unique @map("closure_id") @db.Uuid
+  closure    Closure?          @relation(fields: [closureId], references: [id], onDelete: Cascade)
 
   @@index([facilityId, startsAt])
   @@map("schedule_entry")
@@ -179,6 +183,8 @@ model User {
   bookings        Booking[]
   bookingAttempts BookingAttempt[]
   notifications   Notification[]
+  closuresCreated Closure[]        @relation("ClosureCreatedBy")
+  closuresEnded   Closure[]        @relation("ClosureEndedBy")
   provision       AdminProvision?
 
   @@index([status])
@@ -260,6 +266,8 @@ enum AuditAction {
   booking_no_show
   booking_blocked
   booking_unblocked
+  closure_created
+  closure_ended
 }
 
 /// Privileged account and schedule changes. Actor is null for operator
@@ -281,6 +289,7 @@ model AuditLog {
 
 enum NotificationType {
   booking_blocked
+  booking_cancelled_closure
 }
 
 /// An in-app message for one account. The dedupe key keeps a retried action
@@ -299,4 +308,31 @@ model Notification {
 
   @@index([recipientId, createdAt])
   @@map("notification")
+}
+
+/// A maintenance closure created by Facility Staff or an Admin. While it is
+/// open its schedule entry makes the time unavailable; ending it removes
+/// only this closure's restriction.
+model Closure {
+  id                String         @id @default(uuid(7)) @db.Uuid
+  facilityId        String         @map("facility_id") @db.Uuid
+  startsAt          DateTime       @map("starts_at") @db.Timestamptz(3)
+  endsAt            DateTime       @map("ends_at") @db.Timestamptz(3)
+  reason            String
+  createdById       String         @map("created_by_id")
+  /// The creator's Idempotency-Key; a retry returns this closure.
+  key               String
+  /// Pending or confirmed bookings this closure cancelled.
+  cancelledBookings Int            @default(0) @map("cancelled_bookings")
+  endedAt           DateTime?      @map("ended_at") @db.Timestamptz(3)
+  endedById         String?        @map("ended_by_id")
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  facility          Facility       @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  createdBy         User           @relation("ClosureCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  endedBy           User?          @relation("ClosureEndedBy", fields: [endedById], references: [id], onDelete: SetNull)
+  scheduleEntry     ScheduleEntry?
+
+  @@unique([createdById, key])
+  @@index([facilityId, startsAt])
+  @@map("closure")
 }

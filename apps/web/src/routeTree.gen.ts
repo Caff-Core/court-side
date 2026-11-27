@@ -15,6 +15,7 @@ import { Route as BookingsRouteImport } from "./routes/bookings"
 import { Route as SignInRouteImport } from "./routes/sign-in"
 import { Route as AdminAccountsRouteImport } from "./routes/admin/accounts"
 import { Route as AdminBookingsRouteImport } from "./routes/admin/bookings"
+import { Route as StaffClosuresRouteImport } from "./routes/staff/closures"
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
@@ -46,6 +47,11 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: "/admin/bookings",
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffClosuresRoute = StaffClosuresRouteImport.update({
+  id: "/staff/closures",
+  path: "/staff/closures",
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   "/sign-in": typeof SignInRoute
   "/admin/accounts": typeof AdminAccountsRoute
   "/admin/bookings": typeof AdminBookingsRoute
+  "/staff/closures": typeof StaffClosuresRoute
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   "/sign-in": typeof SignInRoute
   "/admin/accounts": typeof AdminAccountsRoute
   "/admin/bookings": typeof AdminBookingsRoute
+  "/staff/closures": typeof StaffClosuresRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   "/sign-in": typeof SignInRoute
   "/admin/accounts": typeof AdminAccountsRoute
   "/admin/bookings": typeof AdminBookingsRoute
+  "/staff/closures": typeof StaffClosuresRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | "/sign-in"
     | "/admin/accounts"
     | "/admin/bookings"
+    | "/staff/closures"
   fileRoutesByTo: FileRoutesByTo
   to:
     | "/"
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | "/sign-in"
     | "/admin/accounts"
     | "/admin/bookings"
+    | "/staff/closures"
   id:
     | "__root__"
     | "/"
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | "/sign-in"
     | "/admin/accounts"
     | "/admin/bookings"
+    | "/staff/closures"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +118,7 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   AdminAccountsRoute: typeof AdminAccountsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
+  StaffClosuresRoute: typeof StaffClosuresRoute
 }
 
 declare module "@tanstack/react-router" {
@@ -152,6 +165,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    "/staff/closures": {
+      id: "/staff/closures"
+      path: "/staff/closures"
+      fullPath: "/staff/closures"
+      preLoaderRoute: typeof StaffClosuresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   AdminAccountsRoute: AdminAccountsRoute,
   AdminBookingsRoute: AdminBookingsRoute,
+  StaffClosuresRoute: StaffClosuresRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
