@@ -91,6 +91,16 @@ function offsetAt(instantMs: number, timeZone: string) {
   )
 }
 
+/**
+ * Minutes from local midnight at an instant, or null when the instant is not
+ * on a whole local minute.
+ */
+export function localMinutesOf(instant: Date, timeZone: string): number | null {
+  if (instant.getTime() % 60_000 !== 0) return null
+  const p = wallClockParts(instant.getTime(), timeZone)
+  return p.hour * 60 + p.minute
+}
+
 /** The community's calendar date at an instant. */
 export function localDateOf(instant: Date, timeZone: string): LocalDate {
   const p = wallClockParts(instant.getTime(), timeZone)

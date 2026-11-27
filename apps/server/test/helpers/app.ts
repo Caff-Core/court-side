@@ -32,9 +32,11 @@ export async function resetAccounts(app: INestApplication) {
   )
 }
 
-/** Clears schedule entries. Facilities and opening hours stay seeded. */
+/** Clears schedule entries and bookings. Facilities stay seeded. */
 export async function resetSchedule(app: INestApplication) {
-  await prismaOf(app).$executeRawUnsafe('TRUNCATE "schedule_entry"')
+  await prismaOf(app).$executeRawUnsafe(
+    'TRUNCATE "schedule_entry", "booking_attempt", "booking" CASCADE'
+  )
 }
 
 export type FixtureIdentity = {
