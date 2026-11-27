@@ -15,5 +15,6 @@ Build a project a GitHub reviewer can understand in five minutes. The featured w
 | [M01.01 verification](verification/m01-01-access.md) | Evidence for the access flow and public availability on a fresh database |
 | [M02.01 verification](verification/m02-01-booking.md) | Booking race, cap, expiry and lifecycle evidence, and the walkthrough to a confirmed booking |
 | [M03.01 verification](verification/m03-01-closures.md) | Integrated resident, Admin, Staff and visitor flow, cancellation inbox and responsive checks |
+| [M04.01 verification](verification/m04-01-reviewer.md) | Fresh clone, isolated database, seeded walkthrough, GitHub media and CI evidence |
 
 Use the portfolio scope and acceptance criteria to determine what to build for the pinned repository. The product baseline describes the broader product, including deferred work. The verification records distinguish completed checks from pending checks; the real Google sign-in smoke test remains pending.
