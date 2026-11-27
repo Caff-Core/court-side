@@ -9,6 +9,7 @@ import { BookingsModule } from "./bookings/bookings.module.js"
 import { ClockModule } from "./common/clock.js"
 import { ConfigModule } from "./config/config.module.js"
 import { HealthModule } from "./health/health.module.js"
+import { NotificationsModule } from "./notifications/notifications.controller.js"
 import { PrismaModule } from "./prisma/prisma.module.js"
 import { ScheduleModule } from "./schedule/schedule.module.js"
 
@@ -38,6 +39,7 @@ function webAppModule(): DynamicModule[] {
     AccountsModule,
     ScheduleModule,
     BookingsModule,
+    NotificationsModule,
     ...webAppModule(),
   ],
 })

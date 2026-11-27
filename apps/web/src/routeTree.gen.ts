@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from "./routes/__root"
 import { Route as IndexRouteImport } from "./routes/index"
 import { Route as AccountRouteImport } from "./routes/account"
+import { Route as BookingsRouteImport } from "./routes/bookings"
 import { Route as SignInRouteImport } from "./routes/sign-in"
 import { Route as AdminAccountsRouteImport } from "./routes/admin/accounts"
+import { Route as AdminBookingsRouteImport } from "./routes/admin/bookings"
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
@@ -22,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: "/account",
   path: "/account",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingsRoute = BookingsRouteImport.update({
+  id: "/bookings",
+  path: "/bookings",
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignInRoute = SignInRouteImport.update({
@@ -34,39 +41,71 @@ const AdminAccountsRoute = AdminAccountsRouteImport.update({
   path: "/admin/accounts",
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminBookingsRoute = AdminBookingsRouteImport.update({
+  id: "/admin/bookings",
+  path: "/admin/bookings",
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
   "/account": typeof AccountRoute
+  "/bookings": typeof BookingsRoute
   "/sign-in": typeof SignInRoute
   "/admin/accounts": typeof AdminAccountsRoute
+  "/admin/bookings": typeof AdminBookingsRoute
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
   "/account": typeof AccountRoute
+  "/bookings": typeof BookingsRoute
   "/sign-in": typeof SignInRoute
   "/admin/accounts": typeof AdminAccountsRoute
+  "/admin/bookings": typeof AdminBookingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/": typeof IndexRoute
   "/account": typeof AccountRoute
+  "/bookings": typeof BookingsRoute
   "/sign-in": typeof SignInRoute
   "/admin/accounts": typeof AdminAccountsRoute
+  "/admin/bookings": typeof AdminBookingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/account" | "/sign-in" | "/admin/accounts"
+  fullPaths:
+    | "/"
+    | "/account"
+    | "/bookings"
+    | "/sign-in"
+    | "/admin/accounts"
+    | "/admin/bookings"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/account" | "/sign-in" | "/admin/accounts"
-  id: "__root__" | "/" | "/account" | "/sign-in" | "/admin/accounts"
+  to:
+    | "/"
+    | "/account"
+    | "/bookings"
+    | "/sign-in"
+    | "/admin/accounts"
+    | "/admin/bookings"
+  id:
+    | "__root__"
+    | "/"
+    | "/account"
+    | "/bookings"
+    | "/sign-in"
+    | "/admin/accounts"
+    | "/admin/bookings"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
+  BookingsRoute: typeof BookingsRoute
   SignInRoute: typeof SignInRoute
   AdminAccountsRoute: typeof AdminAccountsRoute
+  AdminBookingsRoute: typeof AdminBookingsRoute
 }
 
 declare module "@tanstack/react-router" {
@@ -85,6 +124,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    "/bookings": {
+      id: "/bookings"
+      path: "/bookings"
+      fullPath: "/bookings"
+      preLoaderRoute: typeof BookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     "/sign-in": {
       id: "/sign-in"
       path: "/sign-in"
@@ -99,14 +145,23 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AdminAccountsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    "/admin/bookings": {
+      id: "/admin/bookings"
+      path: "/admin/bookings"
+      fullPath: "/admin/bookings"
+      preLoaderRoute: typeof AdminBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
+  BookingsRoute: BookingsRoute,
   SignInRoute: SignInRoute,
   AdminAccountsRoute: AdminAccountsRoute,
+  AdminBookingsRoute: AdminBookingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
