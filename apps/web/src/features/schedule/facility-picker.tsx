@@ -1,3 +1,11 @@
+import { useState } from "react"
+import { Input } from "@workspace/ui/components/input"
+import {
+  Frame,
+  FrameHeader,
+  FrameTitle,
+  FramePanel,
+} from "@workspace/ui/components/reui/frame"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -12,7 +20,6 @@ import {
   FieldContent,
   FieldDescription,
   FieldLabel,
-  FieldLegend,
   FieldSet,
   FieldTitle,
 } from "@workspace/ui/components/field"
@@ -42,92 +49,131 @@ export function FacilityPicker(props: {
   onSelect: (slug: string) => void
 }) {
   const facilities = useQuery(facilitiesQuery)
+  const [search, setSearch] = useState("")
+  const filtered = facilities.data?.filter((facility) =>
+    `${facility.name} ${facility.sport}`
+      .toLowerCase()
+      .includes(search.trim().toLowerCase())
+  )
 
   return (
-    <FieldSet className="min-w-0">
-      <FieldLegend id="facility-legend" variant="label">
-        Facility
-      </FieldLegend>
-
-      {facilities.isPending && (
-        <div
-          role="status"
-          aria-label="Loading facilities"
-          className="flex flex-col gap-3"
-        >
-          {[0, 1, 2].map((key) => (
-            <Skeleton key={key} className="h-18 w-full rounded-xl" />
-          ))}
-        </div>
-      )}
-
-      {facilities.isError && (
-        <Alert variant="destructive">
-          <CircleAlertIcon />
-          <AlertTitle>Facilities did not load</AlertTitle>
-          <AlertDescription>{errorMessage(facilities.error)}</AlertDescription>
-          <AlertAction>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => facilities.refetch()}
+    <Frame className="min-w-0">
+      <FrameHeader>
+        <FrameTitle id="facility-legend">Facility</FrameTitle>
+      </FrameHeader>
+      <FramePanel className="flex min-h-0 flex-col gap-4">
+        <Input
+          type="search"
+          aria-label="Search facilities"
+          placeholder="Search facilities…"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <FieldSet className="h-64 min-h-0 overflow-y-auto lg:h-[calc(100dvh-22rem)]">
+          {facilities.isPending && (
+            <div
+              role="status"
+              aria-label="Loading facilities"
+              className="flex flex-col gap-3"
             >
-              Retry
-            </Button>
-          </AlertAction>
-        </Alert>
-      )}
+              {[0, 1, 2].map((key) => (
+                <Skeleton key={key} className="h-18 w-full rounded-xl" />
+              ))}
+            </div>
+          )}
 
-      {facilities.data?.length === 0 && (
-        <Empty className="border">
-          <EmptyHeader>
-            <EmptyTitle>No facilities yet</EmptyTitle>
-            <EmptyDescription>
-              Facilities appear here once they are added.
-            </EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => facilities.refetch()}
-            >
-              Refresh
-            </Button>
-          </EmptyContent>
-        </Empty>
-      )}
+          {facilities.isError && (
+            <Alert variant="destructive">
+              <CircleAlertIcon />
+              <AlertTitle>Facilities did not load</AlertTitle>
+              <AlertDescription>
+                {errorMessage(facilities.error)}
+              </AlertDescription>
+              <AlertAction>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => facilities.refetch()}
+                >
+                  Retry
+                </Button>
+              </AlertAction>
+            </Alert>
+          )}
 
-      {facilities.data && facilities.data.length > 0 && (
-        <RadioGroup
-          aria-labelledby="facility-legend"
-          value={props.selected ?? null}
-          onValueChange={(value) => props.onSelect(String(value))}
-        >
-          {facilities.data.map((facility) => (
-            <FieldLabel
-              key={facility.slug}
-              htmlFor={`facility-${facility.slug}`}
+          {facilities.data?.length === 0 && (
+            <Empty className="border">
+              <EmptyHeader>
+                <EmptyTitle>No facilities yet</EmptyTitle>
+                <EmptyDescription>
+                  Facilities appear here once they are added.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => facilities.refetch()}
+                >
+                  Refresh
+                </Button>
+              </EmptyContent>
+            </Empty>
+          )}
+
+          {facilities.data &&
+            facilities.data.length > 0 &&
+            filtered?.length === 0 && (
+              <Empty>
+                <EmptyHeader>
+                  <EmptyTitle>No matching facilities</EmptyTitle>
+                  <EmptyDescription>
+                    Try a facility name or sport.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSearch("")}
+                  >
+                    Clear search
+                  </Button>
+                </EmptyContent>
+              </Empty>
+            )}
+          {filtered && filtered.length > 0 && (
+            <RadioGroup
+              aria-labelledby="facility-legend"
+              value={props.selected ?? null}
+              onValueChange={(value) => props.onSelect(String(value))}
             >
-              <Field orientation="horizontal">
-                <FieldContent>
-                  <FieldTitle>{facility.name}</FieldTitle>
-                  <FieldDescription>
-                    {facility.sport} ·{" "}
-                    {facility.requiresApproval
-                      ? "Admin approval"
-                      : "Instant confirmation"}
-                  </FieldDescription>
-                </FieldContent>
-                <RadioGroupItem
-                  value={facility.slug}
-                  id={`facility-${facility.slug}`}
-                />
-              </Field>
-            </FieldLabel>
-          ))}
-        </RadioGroup>
-      )}
-    </FieldSet>
+              {filtered?.map((facility) => (
+                <FieldLabel
+                  key={facility.slug}
+                  htmlFor={`facility-${facility.slug}`}
+                >
+                  <Field orientation="horizontal">
+                    <FieldContent>
+                      <FieldTitle>{facility.name}</FieldTitle>
+                      <FieldDescription>
+                        {facility.sport} ·{" "}
+                        {facility.requiresApproval
+                          ? "Admin approval"
+                          : "Instant confirmation"}
+                      </FieldDescription>
+                    </FieldContent>
+                    <RadioGroupItem
+                      value={facility.slug}
+                      id={`facility-${facility.slug}`}
+                    />
+                  </Field>
+                </FieldLabel>
+              ))}
+            </RadioGroup>
+          )}
+        </FieldSet>
+      </FramePanel>
+    </Frame>
   )
 }

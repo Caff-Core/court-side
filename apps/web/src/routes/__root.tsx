@@ -22,10 +22,10 @@ function RootLayout() {
   const { theme } = useTheme()
 
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground">
+    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <HeadContent />
       <AppHeader />
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6">
+      <main className="mx-auto flex min-h-0 w-full max-w-screen-2xl flex-1 flex-col gap-6 overflow-y-auto px-4 py-6">
         <Outlet />
       </main>
       <Toaster theme={theme} />

@@ -180,7 +180,7 @@ describe("requesting a slot", () => {
       "GET /api/me": () => ({ status: 401, body: { message: "Sign in" } }),
     })
 
-    await screen.findByRole("list", { name: /Slots for/ })
+    await screen.findByRole("button", { name: /10:00.*Available/ })
     expect(screen.queryByRole("button", { name: /^Request/ })).toBeNull()
   })
 })

@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@workspace/ui/components/button"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+  Frame,
+  FramePanel,
+  FrameDescription,
+  FrameHeader,
+  FrameTitle,
+} from "@workspace/ui/components/reui/frame"
 import {
   Empty,
   EmptyContent,
@@ -23,14 +23,16 @@ import {
 } from "@workspace/ui/components/reui/alert"
 import type { BadgeProps } from "@workspace/ui/components/reui/badge"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { cn } from "@workspace/ui/lib/utils"
+import { EventCalendar } from "@workspace/ui/components/reui/event-calendar/event-calendar"
+import { EventCalendarContent } from "@workspace/ui/components/reui/event-calendar/event-calendar-content"
+import type { CalendarEvent } from "@workspace/ui/components/reui/event-calendar/event-calendar-types"
+import { Badge } from "@workspace/ui/components/reui/badge"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CircleAlertIcon,
 } from "lucide-react"
 
-import { DotBadge } from "@/components/dot-badge"
 import { ApiError, errorMessage } from "@/lib/api"
 
 import {
@@ -66,21 +68,21 @@ export function DaySchedule(props: {
   const data = day.data
 
   return (
-    <Card className="min-w-0">
-      <CardHeader>
-        <CardTitle>
+    <Frame className="min-w-0">
+      <FrameHeader>
+        <FrameTitle>
           <h2>{props.facility?.name ?? data?.facility.name ?? "Schedule"}</h2>
-        </CardTitle>
+        </FrameTitle>
         {props.facility && (
-          <CardDescription>
+          <FrameDescription>
             {props.facility.sport} ·{" "}
             {props.facility.requiresApproval
               ? "Requests wait for Admin approval"
               : "Requests confirm instantly"}
-          </CardDescription>
+          </FrameDescription>
         )}
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      </FrameHeader>
+      <FramePanel className="flex flex-col gap-4">
         {day.isPending && <DaySkeleton />}
         {day.isError && (
           <Alert variant="destructive">
@@ -118,8 +120,8 @@ export function DaySchedule(props: {
             />
           </>
         )}
-      </CardContent>
-    </Card>
+      </FramePanel>
+    </Frame>
   )
 }
 
@@ -200,55 +202,65 @@ function DayBody(props: {
     )
   }
 
+  const events: CalendarEvent<{ index: number; status: SlotStatus }>[] =
+    day.slots.map((slot, index) => ({
+      id: slot.startsAt,
+      title: `${slot.status === "available" && props.onRequest ? "Request " : ""}${formatTimeRange(slot.startsAt, slot.endsAt, timeZone)} · ${SLOT_STATUS[slot.status].label}`,
+      start: new Date(slot.startsAt),
+      end: new Date(slot.endsAt),
+      readOnly: true,
+      color: "var(--color-muted-foreground)",
+      data: { index, status: slot.status },
+    }))
+  const hour = (instant: string) =>
+    Number(
+      new Intl.DateTimeFormat("en", {
+        timeZone,
+        hour: "numeric",
+        hourCycle: "h23",
+      }).format(new Date(instant))
+    )
+
   return (
-    <ul
-      role="list"
-      aria-label={`Slots for ${dayLabel}`}
-      className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,16.5rem),1fr))] gap-2"
-    >
-      {day.slots.map((slot, index) => {
-        const { label, variant } = SLOT_STATUS[slot.status]
-        const cell =
-          "flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm"
-        const content = (
-          <>
-            <time
-              dateTime={slot.startsAt}
-              className="whitespace-nowrap tabular-nums"
-            >
-              {formatTimeRange(slot.startsAt, slot.endsAt, timeZone)}
-            </time>{" "}
-            <DotBadge variant={variant}>{label}</DotBadge>
-          </>
-        )
-        const { onRequest } = props
+    <EventCalendar
+      key={`${day.facility.slug}:${day.date}`}
+      className="h-[640px] min-w-0"
+      events={events}
+      date={new Date(day.dayStartsAt)}
+      view="day"
+      views={["day"]}
+      timeZone={timeZone}
+      dayStartHour={day.opensAt ? hour(day.opensAt) : 0}
+      dayEndHour={day.closesAt ? hour(day.closesAt) || 24 : 24}
+      interval={30}
+      scrollToHour={day.opensAt ? hour(day.opensAt) : 0}
+      interactions={{ drag: false, resize: false, selectSlot: false }}
+      enableShortcuts={false}
+      nowIndicator={false}
+      onEventClick={(occurrence) => {
+        const slot = occurrence.event.data
+        if (slot?.status === "available") props.onRequest?.(day, slot.index)
+      }}
+      renderEvent={({ occurrence }) => {
+        const slot = occurrence.event.data!
         return (
-          <li key={slot.startsAt}>
-            {onRequest && slot.status === "available" ? (
-              <button
-                type="button"
-                className={cn(
-                  cell,
-                  "text-left transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                )}
-                onClick={() => onRequest(day, index)}
-              >
-                <span className="sr-only">Request</span> {content}
-              </button>
-            ) : (
-              <div
-                className={cn(
-                  cell,
-                  slot.status === "past" && "text-muted-foreground"
-                )}
-              >
-                {content}
-              </div>
-            )}
-          </li>
+          <span className="flex items-center gap-2 text-sm">
+            <span className="text-xs whitespace-nowrap tabular-nums sm:text-sm">
+              {formatTimeRange(
+                occurrence.start.toISOString(),
+                occurrence.end.toISOString(),
+                timeZone
+              )}
+            </span>
+            <Badge variant={SLOT_STATUS[slot.status].variant}>
+              {SLOT_STATUS[slot.status].label}
+            </Badge>
+          </span>
         )
-      })}
-    </ul>
+      }}
+    >
+      <EventCalendarContent />
+    </EventCalendar>
   )
 }
 

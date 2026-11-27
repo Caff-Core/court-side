@@ -39,7 +39,7 @@ describe("notifications", () => {
     })
 
     expect(
-      await screen.findByRole("link", { name: "Notifications, 1 unread" })
+      await screen.findByRole("button", { name: "Notifications, 1 unread" })
     ).toBeInTheDocument()
     const list = within(
       await screen.findByRole("list", { name: "Notifications" })
@@ -49,6 +49,39 @@ describe("notifications", () => {
     expect(items[0]).toHaveTextContent("Cancelled by a closure")
     expect(items[0]).toHaveTextContent("Reason: Net replacement")
     expect(items[1]).toHaveTextContent("Read")
+  })
+
+  it("opens the header feed and marks notifications read", async () => {
+    const user = userEvent.setup()
+    let count = 1
+    renderApp("/account", {
+      "GET /api/me": () => ({ body: resident }),
+      "GET /api/notifications": () => ({
+        body: [{ ...unread, readAt: count ? null : "2026-11-27T20:00:00Z" }],
+      }),
+      "GET /api/notifications/unread-count": () => ({ body: { count } }),
+      "POST /api/notifications/read-all": () => {
+        count = 0
+        return { body: { updated: 1 } }
+      },
+    })
+    await user.click(
+      await screen.findByRole("button", { name: "Notifications, 1 unread" })
+    )
+    expect(await screen.findByText(unread.message)).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Mark all as read" }))
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Mark all as read" })
+      ).toBeDisabled()
+    )
+    expect(
+      screen.getByRole("menuitem", { name: "View all notifications" })
+    ).toHaveAttribute("href", "/notifications")
+    await user.keyboard("{Escape}")
+    await waitFor(() =>
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+    )
   })
 
   it("marks one notification read and refreshes the count", async () => {
@@ -76,7 +109,7 @@ describe("notifications", () => {
       expect(calls).toContain("POST /api/notifications/n1/read")
     )
     expect(
-      await screen.findByRole("link", { name: "Notifications" })
+      await screen.findByRole("button", { name: "Notifications" })
     ).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Mark all as read" })

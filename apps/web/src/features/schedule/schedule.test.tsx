@@ -88,12 +88,15 @@ describe("public schedule", () => {
     ).toBeInTheDocument()
     await waitFor(() => expect(document.title).toBe("Schedule | Court Side"))
 
-    const slots = within(screen.getByRole("list", { name: /slots/i }))
-    const items = slots.getAllByRole("listitem")
-    expect(items).toHaveLength(4)
-    expect(items[0]).toHaveTextContent("Booked")
-    expect(items[1]).toHaveTextContent("Available")
-    expect(items[2]).toHaveTextContent("Closed")
+    expect(
+      screen.getByRole("button", { name: /9:00.*Booked/ })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /9:30.*Available/ })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /10:00.*Closed/ })
+    ).toBeInTheDocument()
     expect(
       screen.getByRole("heading", {
         level: 2,
@@ -139,6 +142,28 @@ describe("public schedule", () => {
       })
     ).toBeInTheDocument()
     expect(calls).toContain("GET /api/facilities/maple-tennis-1/availability")
+  })
+
+  it("filters facilities by sport and clears an empty search", async () => {
+    const user = userEvent.setup()
+    renderApp("/", {
+      ...signedOut,
+      ...publicApi,
+      "GET /api/facilities/cedar-basketball/availability": () => ({
+        body: day(),
+      }),
+    })
+    const search = await screen.findByRole("searchbox", {
+      name: "Search facilities",
+    })
+    await user.type(search, "tennis")
+    expect(screen.getAllByRole("radio")).toHaveLength(1)
+    expect(screen.getByRole("radio", { name: /Maple/ })).toBeInTheDocument()
+    await user.clear(search)
+    await user.type(search, "unknown")
+    expect(screen.getByText("No matching facilities")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Clear search" }))
+    expect(screen.getAllByRole("radio")).toHaveLength(2)
   })
 
   it("steps between days and stops at the end of the window", async () => {

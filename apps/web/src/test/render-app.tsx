@@ -3,6 +3,10 @@ import { createMemoryHistory, RouterProvider } from "@tanstack/react-router"
 import { render } from "@testing-library/react"
 import { vi } from "vitest"
 
+// Load the calendar before timed interactions; Vite otherwise transforms this
+// large lazy-route dependency during the first test on a cold CI worker.
+import "@/features/schedule/day-schedule"
+
 import { ThemeProvider } from "@/components/theme-provider"
 import { createAppRouter } from "@/router"
 

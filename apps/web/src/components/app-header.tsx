@@ -15,11 +15,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import { BellIcon, LogOutIcon, UserIcon } from "lucide-react"
+import { ChevronsUpDownIcon, LogOutIcon, UserIcon } from "lucide-react"
 import { toast } from "sonner"
-import { Badge } from "@workspace/ui/components/reui/badge"
+import { NotificationsMenu } from "@/features/notifications/notifications-menu"
 
-import { unreadCountQuery } from "@/features/notifications/api"
 import { meQuery, signOut } from "@/features/session/session"
 import { ROLE_LABELS } from "@/features/session/types"
 import { errorMessage } from "@/lib/api"
@@ -34,8 +33,9 @@ export function initials(name: string) {
 }
 
 const navLinkClass =
-  "text-muted-foreground hover:text-foreground data-[status=active]:text-foreground rounded-md text-sm font-medium transition-colors"
+  "text-muted-foreground hover:text-foreground data-[status=active]:text-foreground text-sm font-medium transition-colors"
 
+// Account trigger and menu adapted from ReUI c-avatar-35.
 export function AppHeader() {
   const { data: me } = useQuery(meQuery)
   const queryClient = useQueryClient()
@@ -51,8 +51,8 @@ export function AppHeader() {
   }
 
   return (
-    <header className="border-b">
-      <div className="mx-auto flex min-h-14 w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 md:flex-nowrap md:py-0">
+    <header className="z-30 shrink-0 border-b bg-background">
+      <div className="mx-auto flex min-h-14 w-full max-w-screen-2xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 md:flex-nowrap md:py-0">
         <Link to="/" className="text-sm font-semibold tracking-tight">
           Court Side
         </Link>
@@ -86,23 +86,34 @@ export function AppHeader() {
           )}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          {me && <NotificationsLink />}
+          {me && <NotificationsMenu />}
           {me ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Button variant="ghost" size="sm" aria-label="Account menu" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 rounded-full"
+                    aria-label="Account menu"
+                  />
                 }
               >
-                <Avatar className="size-6">
+                <Avatar size="sm">
                   {me.image && <AvatarImage src={me.image} alt="" />}
                   <AvatarFallback className="text-xs">
                     {initials(me.name)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline">{me.name}</span>
+                <span className="hidden text-xs font-medium sm:inline">
+                  {me.name}
+                </span>
+                <ChevronsUpDownIcon
+                  className="size-3.5 opacity-60"
+                  aria-hidden="true"
+                />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56" sideOffset={8}>
                 <DropdownMenuGroup>
                   <DropdownMenuLabel className="flex flex-col gap-0.5">
                     <span className="text-sm font-medium text-foreground">
@@ -132,27 +143,5 @@ export function AppHeader() {
         </div>
       </div>
     </header>
-  )
-}
-
-/** Bell link to the inbox with the unread count, refreshed in the background. */
-function NotificationsLink() {
-  const { data } = useQuery(unreadCountQuery)
-  const count = data?.count ?? 0
-  return (
-    <Link
-      to="/notifications"
-      aria-label={
-        count > 0 ? `Notifications, ${count} unread` : "Notifications"
-      }
-      className={buttonVariants({ variant: "ghost", size: "sm" })}
-    >
-      <BellIcon aria-hidden="true" />
-      {count > 0 && (
-        <Badge variant="info" size="sm" className="tabular-nums">
-          {count}
-        </Badge>
-      )}
-    </Link>
   )
 }
