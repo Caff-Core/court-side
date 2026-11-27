@@ -3,15 +3,19 @@ import { Test } from "@nestjs/testing"
 import request from "supertest"
 
 import { AppModule } from "../../src/app.module.js"
+import { CLOCK, type Clock } from "../../src/common/clock.js"
 import { configureApp } from "../../src/configure-app.js"
 import { PrismaService } from "../../src/prisma/prisma.service.js"
 
 export const ORIGIN = "http://localhost:5173"
 
-export async function createTestApp() {
-  const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
-  }).compile()
+/** Boots the real app. Pass a clock to control "now" in time-based checks. */
+export async function createTestApp(options: { clock?: Clock } = {}) {
+  let builder = Test.createTestingModule({ imports: [AppModule] })
+  if (options.clock) {
+    builder = builder.overrideProvider(CLOCK).useValue(options.clock)
+  }
+  const moduleRef = await builder.compile()
   const app = configureApp(moduleRef.createNestApplication())
   await app.init()
   return app
@@ -26,6 +30,11 @@ export async function resetAccounts(app: INestApplication) {
   await prismaOf(app).$executeRawUnsafe(
     'TRUNCATE "audit_log", "admin_provision", "session", "account", "verification", "user" CASCADE'
   )
+}
+
+/** Clears schedule entries. Facilities and opening hours stay seeded. */
+export async function resetSchedule(app: INestApplication) {
+  await prismaOf(app).$executeRawUnsafe('TRUNCATE "schedule_entry"')
 }
 
 export type FixtureIdentity = {

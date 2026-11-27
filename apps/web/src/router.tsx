@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query"
 import { createRouter, type RouterHistory } from "@tanstack/react-router"
 
+import { ApiError } from "./lib/api"
 import { routeTree } from "./routeTree.gen"
 
 export function createAppRouter(
@@ -21,7 +22,14 @@ export function createAppRouter(
 export function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
-      queries: { staleTime: 30_000 },
+      queries: {
+        staleTime: 30_000,
+        // A 4xx answer will not change on retry; only retry server and
+        // network failures.
+        retry: (failureCount, error) =>
+          !(error instanceof ApiError && error.status < 500) &&
+          failureCount < 2,
+      },
     },
   })
 }

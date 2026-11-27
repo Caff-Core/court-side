@@ -5,9 +5,11 @@ import { ServeStaticModule } from "@nestjs/serve-static"
 
 import { AccountsModule } from "./accounts/accounts.module.js"
 import { AuthModule } from "./auth/auth.module.js"
+import { ClockModule } from "./common/clock.js"
 import { ConfigModule } from "./config/config.module.js"
 import { HealthModule } from "./health/health.module.js"
 import { PrismaModule } from "./prisma/prisma.module.js"
+import { ScheduleModule } from "./schedule/schedule.module.js"
 
 const webDist = resolve(import.meta.dirname, "../../web/dist")
 
@@ -28,10 +30,12 @@ function webAppModule(): DynamicModule[] {
 @Module({
   imports: [
     ConfigModule,
+    ClockModule,
     PrismaModule,
     AuthModule,
     HealthModule,
     AccountsModule,
+    ScheduleModule,
     ...webAppModule(),
   ],
 })

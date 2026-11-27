@@ -76,4 +76,28 @@ describe("facility schema", () => {
       })
     ).rejects.toThrow()
   })
+  it("rejects a schedule entry that does not end after it starts", async () => {
+    const at = new Date("2026-11-28T13:00:00Z")
+    await expect(
+      prisma.scheduleEntry.create({
+        data: { facilityId, kind: "closure", startsAt: at, endsAt: at },
+      })
+    ).rejects.toThrow()
+  })
+
+  it("requires a deadline on holds and only on holds", async () => {
+    const range = {
+      facilityId,
+      startsAt: new Date("2026-11-28T13:00:00Z"),
+      endsAt: new Date("2026-11-28T13:30:00Z"),
+    }
+    await expect(
+      prisma.scheduleEntry.create({ data: { ...range, kind: "hold" } })
+    ).rejects.toThrow()
+    await expect(
+      prisma.scheduleEntry.create({
+        data: { ...range, kind: "booking", expiresAt: range.startsAt },
+      })
+    ).rejects.toThrow()
+  })
 })
