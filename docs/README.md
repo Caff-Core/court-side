@@ -13,5 +13,6 @@ Build a project a GitHub reviewer can understand in five minutes. The featured w
 | [Product requirements v1.2](product-requirements-v1.2.md) | Full product baseline with original requirement IDs |
 | [M01.01 verification](verification/m01-01-access.md) | Evidence for the access flow and public availability on a fresh database |
 | [M02.01 verification](verification/m02-01-booking.md) | Booking race, cap, expiry and lifecycle evidence, and the walkthrough to a confirmed booking |
+| [M03.01 verification](verification/m03-01-closures.md) | Integrated resident, Admin, Staff and visitor flow, cancellation inbox and responsive checks |
 
-Use the portfolio scope and acceptance criteria to determine what to build for the pinned repository. The product baseline describes the broader product, including deferred work. This pack defines planned work and verification. All product checks are **Not run**.
+Use the portfolio scope and acceptance criteria to determine what to build for the pinned repository. The product baseline describes the broader product, including deferred work. The verification records distinguish completed checks from pending checks; the real Google sign-in smoke test remains pending.

@@ -52,11 +52,14 @@ export function AppHeader() {
 
   return (
     <header className="border-b">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-6 px-4">
+      <div className="mx-auto flex min-h-14 w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 md:flex-nowrap md:py-0">
         <Link to="/" className="text-sm font-semibold tracking-tight">
           Court Side
         </Link>
-        <nav aria-label="Main" className="flex items-center gap-4">
+        <nav
+          aria-label="Main"
+          className="order-last flex w-full min-w-0 flex-wrap items-center gap-x-4 gap-y-2 md:order-none md:w-auto"
+        >
           <Link to="/" className={navLinkClass} activeOptions={{ exact: true }}>
             Schedule
           </Link>
