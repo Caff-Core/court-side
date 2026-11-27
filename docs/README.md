@@ -12,5 +12,6 @@ Build a project a GitHub reviewer can understand in five minutes. The featured w
 | [Acceptance and testing](acceptance-and-testing.md) | Observable criteria, test levels, evidence, and the test-first workflow |
 | [Product requirements v1.2](product-requirements-v1.2.md) | Full product baseline with original requirement IDs |
 | [M01.01 verification](verification/m01-01-access.md) | Evidence for the access flow and public availability on a fresh database |
+| [M02.01 verification](verification/m02-01-booking.md) | Booking race, cap, expiry and lifecycle evidence, and the walkthrough to a confirmed booking |
 
 Use the portfolio scope and acceptance criteria to determine what to build for the pinned repository. The product baseline describes the broader product, including deferred work. This pack defines planned work and verification. All product checks are **Not run**.
